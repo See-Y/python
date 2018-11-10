@@ -1,4 +1,3 @@
-
 import socket
 import threading
 import random, string
@@ -54,15 +53,20 @@ def receive(client_sock):
         if 'group'==data.decode('UTF-8').lower().strip():
             try:
                 client_sock.send(bytes("현재 연결된 사용자: {}\n".format(client_id),'utf-8'))
-                key=make_key()
+                
+                key=make_key()#key생성
                 t=client_sock.recv(1024).decode('utf-8').lower().strip()
                 while t!='finish':
                     try:
                         t=int(t)
                     except:
                         pass
+
+                    #본인에게도 key 전달
                     client_sock.send(bytes("yourKey", 'utf-8'))
                     client_sock.send(bytes(str(key),'utf-8'))
+
+                    #원하는 애들한테도 key 전달
                     if not(t in client_list):
                         client_sock.send(bytes("\n{} 유저는 현재 접속 중이 아닙니다".format(t), 'utf-8'))
                     else:
