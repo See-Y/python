@@ -12,6 +12,7 @@ address = (server_ip, server_port)
 mysock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 mysock.connect(address)
 
+#암호화에 필요한것
 CodeKey='asdf'
 decode_mode=False
 encode_mode=False
@@ -65,13 +66,17 @@ def receive():
         if not data:  # 넘어온 데이터가 없다면.. 로그아웃!
             print("서버로부터 정상적으로 로그아웃했습니다.")
             break
+
         data=data.decode('UTF-8')
+
+        #나에게 주는 키 받기
         if data=='yourKey':
             lock.acquire()
             CodeKey=mysock.recv(1024).decode('UTF-8')
             lock.release()
             continue
 
+        #상대가 주는 키 받기
         if data=='Key':
             lock.acquire()
             print('Someone gave you the key')
@@ -79,6 +84,7 @@ def receive():
             lock.release()
             continue
                    
+        #아이디 빼고 decode하기
         if decode_mode:
             try:
                 i=data.find(':')
@@ -112,6 +118,7 @@ def main_thread():
             print("서버와의 접속을 끊는 중입니다.")
             break
 
+        #암호화/복호화 명령어 받기
         if data.lower().strip() =='decode activate':
             decode_mode=True
             print('*'*50+'\nDecode mode is activated'+'*'*50)
@@ -132,6 +139,7 @@ def main_thread():
             print('*'*50+'\nEncode mode is deactivated\n'+'*'*50)
             continue
 
+        #그룹 명령어 받기
         if data.lower().strip()=='group':
             print('누구랑 대화를 나누시겠습니까?')
             print('한명씩 id를 입력해주시고 입력을 모두 마치셨으면 "finish"라고 입력해주세요')
@@ -152,15 +160,17 @@ def main_thread():
                 print("Something's wrong with your connection")
                 break;
 
-        
+        #도움말
         if data.lower().strip()=='help':
             print(note)
             continue
         
+        #list
         if data.lower().strip()=='list':
             mysock.send(bytes('list', 'utf-8'))
             continue
 
+        #암호화 하기
         try:
             if encode_mode:
                 data=encode(data, CodeKey)
